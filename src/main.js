@@ -192,6 +192,9 @@ scene.add(cake.group);
 const cakeCenter = () => cake.group.position.clone().setY(temple.table.topY + CAKE_TOP);
 
 // ---------------- 輸入 ----------------
+// 禁止右鍵選單
+addEventListener('contextmenu', (e) => e.preventDefault());
+
 // ESC 選單：暫停、繼續、重頭開始
 let paused = false;
 function setMenu(open) {
