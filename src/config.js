@@ -61,8 +61,8 @@ export const CONFIG = {
 
   // 結束後在神殿裡逛逛時的閒聊
   freeTalk: {
-    laimu: ['今天開心嗎？', '蛋糕好吃嗎？', '生日快樂，{name}！'],
-    sailorGirl: ['喵～', '蛋糕超好吃的！'],
+    laimu: ['真的嗎？', 'Jam的嗎？', '生日快樂，{name}！', '這裡沒有翁法羅斯周邊', ':O', ':cat_stare: '],
+    sailorGirl: ['喵～', '超好吃的！'],
     sailorBoy: ['再來一塊蛋糕！', '生日快樂～'],
   },
 };
