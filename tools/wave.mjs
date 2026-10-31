@@ -1,0 +1,10 @@
+import { chromium } from 'playwright-core';
+const [out] = process.argv.slice(2);
+const b = await chromium.launch({ channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+await p.goto('http://localhost:5173/preview.html');
+await p.waitForTimeout(2000);
+await p.click('button[data-act="wave"]');
+await p.waitForTimeout(700);
+await p.screenshot({ path: out, clip: { x: 160, y: 200, width: 960, height: 320 } });
+await b.close();

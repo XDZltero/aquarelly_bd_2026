@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>夏微的生日 🎂</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="loading">載入中…</div>
+
+  <div id="title" class="screen hidden">
+    <div class="card">
+      <div class="title-icon">⏳</div>
+      <h1 id="title-text"></h1>
+      <p id="title-sub"></p>
+      <button id="start-btn">開始 ▶</button>
+      <div class="keys">
+        <span><b>WASD</b> / <b>方向鍵</b> 移動</span>
+        <span><b>Shift</b> 跑步</span>
+        <span><b>E</b> / <b>空白鍵</b> 互動</span>
+      </div>
+      <div class="credit">製作者：<a href="https://xdzltero.github.io/Intro/" target="_blank" rel="noopener">萊姆醬</a>（xd_zltero）</div>
+    </div>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div id="slots"></div>
+    <div id="objective"></div>
+  </div>
+
+  <div id="prompt" class="hidden"></div>
+  <div id="toast" class="hidden"></div>
+  <div id="center-text" class="hidden"></div>
+
+  <div id="dialog" class="hidden">
+    <div id="dialog-name"></div>
+    <div id="dialog-text"></div>
+    <div id="dialog-next" class="hidden">▼</div>
+  </div>
+
+  <div id="blow" class="hidden">
+    <div class="hint">按住 <b>空白鍵</b> 吹蠟燭 🌬️</div>
+    <div id="meter"><div id="meter-fill"></div></div>
+    <button id="mic-btn">🎤 改用麥克風吹</button>
+  </div>
+
+  <div id="cut-hint" class="hidden">按住 <b>滑鼠左鍵</b> 從蛋糕上劃過去 🔪（或按 <b>空白鍵</b>）</div>
+
+  <div id="howto" class="screen hidden">
+    <div class="card howto">
+      <h2>操作說明</h2>
+      <div class="rows">
+        <div><span class="k">W</span><span class="k">A</span><span class="k">S</span><span class="k">D</span> 或 <span class="k">↑</span><span class="k">←</span><span class="k">↓</span><span class="k">→</span><em>移動</em></div>
+        <div><span class="k wide">Shift</span><em>按住跑步</em></div>
+        <div><span class="k">E</span> 或 <span class="k wide">空白鍵</span><em>撿東西、說話、下一句</em></div>
+        <div><span class="k wide">滑鼠滾輪</span><em>拉近 / 拉遠畫面</em></div>
+        <div><span class="k wide">ESC</span><em>打開選單（繼續遊戲／重新開始）</em></div>
+      </div>
+      <button id="howto-btn">知道了！</button>
+    </div>
+  </div>
+
+  <div id="keys-hint" class="hidden"><b>WASD</b> 移動　<b>Shift</b> 跑　<b>E</b> 互動　<b>滾輪</b> 縮放　<b>ESC</b> 選單</div>
+
+  <div id="menu" class="screen hidden">
+    <div class="card menu">
+      <h2>選單</h2>
+      <div class="menu-buttons">
+        <button id="resume-btn">▶ 繼續遊戲</button>
+        <button id="restart-btn">🔁 重新開始</button>
+      </div>
+      <div class="volume">
+        <span>🔊 音量</span>
+        <input id="vol" type="range" min="0" max="100" step="1" />
+        <span id="vol-val">50%</span>
+      </div>
+      <div class="credit">製作者：<a href="https://xdzltero.github.io/Intro/" target="_blank" rel="noopener">萊姆醬</a>（xd_zltero）</div>
+    </div>
+  </div>
+
+  <div id="final" class="screen hidden">
+    <div class="card final">
+      <h2 id="final-title"></h2>
+      <p id="final-message"></p>
+      <div class="buttons">
+        <button id="roam-btn">✨ 在神殿逛逛</button>
+        <button id="replay-btn">🔁 再玩一次</button>
+      </div>
+      <div class="credit">製作者：<a href="https://xdzltero.github.io/Intro/" target="_blank" rel="noopener">萊姆醬</a>（xd_zltero）</div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

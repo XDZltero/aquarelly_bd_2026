@@ -1,0 +1,5 @@
+node_modules/
+dist/
+# 參考圖片與原始音樂不需要上傳（遊戲用到的檔案已經在 public/assets）
+character/
+music/

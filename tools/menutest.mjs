@@ -1,0 +1,17 @@
+import { chromium } from 'playwright-core';
+const out = process.argv[2];
+const b = await chromium.launch({ channel: 'msedge', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+p.on('pageerror', (e) => console.log('[pageerror]', e.message));
+await p.goto('http://localhost:5173/');
+await p.waitForTimeout(2500);
+await p.click('#start-btn');
+await p.waitForTimeout(3000);
+await p.keyboard.press('Escape');
+await p.waitForTimeout(600);
+await p.screenshot({ path: out });
+console.log('menu visible:', await p.isVisible('#menu'));
+await p.click('#resume-btn');
+await p.waitForTimeout(300);
+console.log('after resume visible:', await p.isVisible('#menu'));
+await b.close();
