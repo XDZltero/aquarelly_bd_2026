@@ -26,7 +26,7 @@ export const CHARACTERS = {
     outfit: { shorts: '#d8b47a', boots: '#24222b', attach: [{ type: 'buttons' }] },
   }),
 
-  // 夏微的遊戲角色（女）：白色短髮、紅色蝴蝶結、白上衣配紅色水手領與紅裙
+  // 夏微的遊戲角色（女）：白色短髮、紅色蝴蝶結、白上衣配紅色水手領、裙襬有兩道白條紋的紅色百褶裙
   sailorGirl: design('蓓塔', {
     skin: '#ffe6dc', skinShade: '#e0b4a8', hair: '#eef0fa', hairShade: '#b4b8d0', hairLine: '#4a4a62', hairVeil: '#ffffff',
     eye: '#4a4a58', eyeDark: '#1a1a24', brow: '#b4b8d0',
@@ -35,20 +35,20 @@ export const CHARACTERS = {
   }, {
     hair: 'shortNeat', face: { lashes: true, lidBase: 0.34, mouth: 'cat' },
     accessories: [{ type: 'ribbon', color: '#d8333d', side: 'top', size: 1.4 }],
-    outfit: { coat: false, sleeveColor: '#f8f6f6', skirt: { color: '#d8333d', top: 0.36, hem: 0.17, flare: 1.7 }, boots: '#b32e36',
+    outfit: { coat: false, sleeveColor: '#f8f6f6', sleeveFlare: 1.3, skirt: { color: '#d8333d', stripe: '#ffffff', top: 0.36, hem: 0.16, flare: 1.75, pleats: 16 }, boots: '#b32e36',
       attach: [{ type: 'sailor', collar: '#d8333d', stripe: '#ffffff', tie: '#e04a3c' }] },
   }),
 
-  // 夏微的遊戲角色（男）：淺藍刺蝟頭、藍色蝴蝶結、深藍水手服配白色水手領
+  // 夏微的遊戲角色（男）：淺藍刺蝟頭、藍色蝴蝶結、深藍水手服配白色水手領、深藍短褲與白襪
   sailorBoy: design('阿爾法', {
     skin: '#ffe6dc', skinShade: '#e0b4a8', hair: '#cfe0f7', hairShade: '#8aa4d0', hairLine: '#3a4a6a', hairVeil: '#eaf2ff',
     eye: '#4a4a58', eyeDark: '#1a1a24', brow: '#8aa4d0',
-    coat: '#233a78', coatInner: '#1a2a5a', trim: '#233a78', shirt: '#233a78', scarf: '#d8333d',
-    pants: '#1d2f62', shoe: '#2a2f45', sole: '#3a3a4a',
+    coat: '#233a78', coatInner: '#1a2a5a', trim: '#f4f4f8', shirt: '#233a78', scarf: '#d8333d',
+    pants: '#ffe6dc', shoe: '#2a2f45', sole: '#3a3a4a',
   }, {
     hair: 'shortSpiky', face: { lidBase: 0.34, mouth: 'cat' },
     accessories: [{ type: 'ribbon', color: '#22306b', side: 'top', size: 1.3 }],
-    outfit: { coat: false, sleeveColor: '#233a78', boots: '#2a2f45',
+    outfit: { coat: false, sleeveColor: '#233a78', sleeveFlare: 1.3, shorts: '#1d2f62', boots: '#f4f4f8',
       attach: [{ type: 'sailor', collar: '#f4f4f8', stripe: '#4d74c9', tie: '#e04a3c' }] },
   }),
 };

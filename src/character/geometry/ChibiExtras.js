@@ -165,38 +165,116 @@ export function buildArmband({ side = 'L', color = '#f0b43a', shade, at = 0.055 
   return g;
 }
 
-// 水手領：肩上一圈扁圓的領子、背後方片與一條領邊條紋、胸前 V 領與紅色領巾（夏微的阿爾法 / 蓓塔）
+// 水手領（夏微的阿爾法 / 蓓塔）：一整片披在肩上的大領子 —— 胸前收成 V 字、兩側蓋過肩頭、背後垂下一塊方片，
+// 靠近領邊有兩道條紋，V 字的尖端打一個紅色領巾結。掛在 chest 骨上（chest 骨在 y = 0.46）
+// 領子的內緣（貼著脖子、胸前是 V 領口）與外緣（領邊）各用一圈控制點描出來，只寫右半邊，左半邊鏡射
+const SAILOR_OUTER = [[0, 0.445, 0.084], [0.04, 0.48, 0.08], [0.08, 0.512, 0.06], [0.118, 0.54, 0.03], [0.138, 0.532, 0],
+  [0.124, 0.527, -0.036], [0.098, 0.49, -0.078], [0.092, 0.435, -0.09], [0.046, 0.432, -0.092], [0, 0.432, -0.093]];
+const SAILOR_INNER = [[0, 0.497, 0.072], [0.02, 0.525, 0.064], [0.038, 0.55, 0.046], [0.05, 0.563, 0.02], [0.054, 0.566, 0],
+  [0.05, 0.567, -0.024], [0.04, 0.568, -0.042], [0.028, 0.568, -0.05], [0.014, 0.568, -0.055], [0, 0.568, -0.057]];
+const sailorLoop = (half) => {
+  const pts = half.map(([x, y, z]) => new THREE.Vector3(x, y - 0.46, z));
+  for (let i = half.length - 2; i >= 1; i--) pts.push(new THREE.Vector3(-half[i][0], half[i][1] - 0.46, half[i][2]));
+  return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.35);
+};
+function sailorCollarGeometries() {
+  const N = 96; // 繞脖子一圈
+  const R = 7; // 內緣 → 外緣
+  const T = 0.006; // 布的厚度
+  const inner = sailorLoop(SAILOR_INNER);
+  const outer = sailorLoop(SAILOR_OUTER);
+  const center = new THREE.Vector3(0, 0.04, 0);
+  const rows = []; // rows[i][r] = { p（上表面）, n（往外的法線） }
+  for (let i = 0; i < N; i++) {
+    const I = inner.getPoint(i / N);
+    const O = outer.getPoint(i / N);
+    const tan = inner.getPoint((i + 1) / N).sub(inner.getPoint((i - 1 + N) / N)).add(outer.getPoint((i + 1) / N)).sub(outer.getPoint((i - 1 + N) / N));
+    const n = new THREE.Vector3().crossVectors(tan, O.clone().sub(I)).normalize();
+    if (n.dot(I.clone().lerp(O, 0.5).sub(center)) < 0) n.negate();
+    const row = [];
+    for (let r = 0; r <= R; r++) {
+      const f = r / R;
+      // 中段稍微鼓起來，才不會陷進肩膀和胸口裡
+      row.push({ p: I.clone().lerp(O, f).addScaledVector(n, 0.007 * Math.sin(Math.PI * f)), n });
+    }
+    rows.push(row);
+  }
+  // 領子本體：上表面、下表面、內外兩圈側邊
+  const pos = [];
+  const idx = [];
+  const W = R + 1;
+  for (const layer of [0, 1]) for (const row of rows) for (const { p, n } of row) pos.push(p.x - n.x * T * layer, p.y - n.y * T * layer, p.z - n.z * T * layer);
+  const at = (layer, i, r) => layer * N * W + (i % N) * W + r;
+  const quad = (a, b, c, d) => idx.push(a, b, c, a, c, d);
+  for (let i = 0; i < N; i++) {
+    for (let r = 0; r < R; r++) {
+      quad(at(0, i, r), at(0, i, r + 1), at(0, i + 1, r + 1), at(0, i + 1, r));
+      quad(at(1, i, r), at(1, i + 1, r), at(1, i + 1, r + 1), at(1, i, r + 1));
+    }
+    quad(at(0, i, R), at(1, i, R), at(1, i + 1, R), at(0, i + 1, R));
+    quad(at(0, i, 0), at(0, i + 1, 0), at(1, i + 1, 0), at(1, i, 0));
+  }
+  const body = new THREE.BufferGeometry();
+  body.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  body.setIndex(idx);
+  // 面的方向反了就整個翻過來（用體積的正負號判斷）
+  let vol = 0;
+  const A = new THREE.Vector3();
+  const B = new THREE.Vector3();
+  const C = new THREE.Vector3();
+  for (let k = 0; k < idx.length; k += 3) {
+    A.fromArray(pos, idx[k] * 3); B.fromArray(pos, idx[k + 1] * 3); C.fromArray(pos, idx[k + 2] * 3);
+    vol += A.dot(B.cross(C));
+  }
+  if (vol < 0) for (let k = 0; k < idx.length; k += 3) [idx[k + 1], idx[k + 2]] = [idx[k + 2], idx[k + 1]];
+  body.setIndex(idx);
+  body.computeVertexNormals();
+
+  // 條紋：貼在上表面、靠近領邊的兩道細帶（正反兩面都畫，不用管面的方向）
+  const sp = [];
+  const si = [];
+  for (const [f0, f1] of [[0.74, 0.8], [0.86, 0.92]]) {
+    const base = sp.length / 3;
+    for (let i = 0; i < N; i++) {
+      for (const f of [f0, f1]) {
+        const x = f * R;
+        const r0 = Math.min(R - 1, Math.floor(x));
+        const a = rows[i][r0];
+        const b = rows[i][r0 + 1];
+        const p = a.p.clone().lerp(b.p, x - r0).addScaledVector(a.n, 0.0018);
+        sp.push(p.x, p.y, p.z);
+      }
+    }
+    for (let i = 0; i < N; i++) {
+      const a = base + i * 2;
+      const b = base + ((i + 1) % N) * 2;
+      si.push(a, a + 1, b + 1, a, b + 1, b, a, b + 1, a + 1, a, b, b + 1);
+    }
+  }
+  const stripes = new THREE.BufferGeometry();
+  stripes.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+  stripes.setIndex(si);
+  stripes.computeVertexNormals();
+  return { body, stripes };
+}
+
 export function buildSailor({ collar = '#f4f4f8', stripe = '#4d74c9', tie = '#e04a3c' } = {}) {
   const g = new THREE.Group();
-  const ring = piece(new THREE.CylinderGeometry(0.07, 0.118, 0.032, 24), collar, { line: 0.8 });
-  ring.position.y = 0.062;
-  g.add(ring);
-  const band = piece(new THREE.TorusGeometry(0.112, 0.006, 6, 28), stripe, { line: 0 });
-  band.rotation.x = Math.PI / 2;
-  band.position.y = 0.05;
-  g.add(band);
-  const flap = piece(new THREE.BoxGeometry(0.17, 0.11, 0.012), collar, { line: 0.8 });
-  flap.position.set(0, 0.015, -0.088);
-  flap.rotation.x = 0.18;
-  g.add(flap);
-  const flapLine = piece(new THREE.BoxGeometry(0.15, 0.006, 0.013), stripe, { line: 0 });
-  flapLine.position.set(0, -0.025, -0.081);
-  flapLine.rotation.x = 0.18;
-  g.add(flapLine);
-  const v = piece(new THREE.ConeGeometry(0.042, 0.07, 3), collar, { line: 0.6 });
-  v.rotation.set(Math.PI, 0, 0);
-  v.scale.set(1, 1, 0.3);
-  v.position.set(0, 0.03, 0.094);
-  g.add(v);
-  const knot = piece(new THREE.SphereGeometry(0.02, 10, 8), tie, { line: 0.6 });
-  knot.scale.set(1.3, 1, 0.8);
-  knot.position.set(0, 0.002, 0.104);
+  const { body, stripes } = sailorCollarGeometries();
+  g.add(piece(body, collar, { line: 0.9 }));
+  g.add(piece(stripes, stripe, { line: 0 }));
+  // 領巾：V 字尖端一個結，底下兩片往兩邊散開的巾尾
+  const tipY = SAILOR_OUTER[0][1] - 0.46;
+  const tipZ = SAILOR_OUTER[0][2];
+  const knot = piece(new THREE.SphereGeometry(0.021, 12, 10), tie, { line: 0.7 });
+  knot.scale.set(1.25, 1, 0.8);
+  knot.position.set(0, tipY + 0.004, tipZ + 0.012);
   g.add(knot);
   for (const s of [-1, 1]) {
-    const tail = piece(new THREE.ConeGeometry(0.02, 0.07, 4), tie, { line: 0.6 });
+    const tail = piece(new THREE.ConeGeometry(0.027, 0.085, 4), tie, { line: 0.7 });
     tail.scale.set(1, 1, 0.4);
-    tail.position.set(s * 0.014, -0.036, 0.106);
-    tail.rotation.set(Math.PI, 0, -s * 0.25);
+    tail.position.set(s * 0.02, tipY - 0.04, tipZ + 0.012);
+    tail.rotation.set(Math.PI, 0, -s * 0.34);
     g.add(tail);
   }
   return g;
