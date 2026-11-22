@@ -358,20 +358,33 @@ export function scarfGeometries(bi) {
 // ── 其他角色的服裝部件 ──
 // 裙子：從腰部往下張開，下半段跟著同側大腿
 export function skirtGeometry(bi, { top = 0.31, hem = 0.17, flare = 1.55, pleats = 10 } = {}) {
-  const K = 32;
   const span = top - hem;
   const stations = [];
   const N = 5;
-  for (let i = 0; i <= N; i++) {
-    const t = i / N;
-    const k = 1 + (flare - 1) * Math.pow(t, 1.4);
-    const amp = 0.007 * t;
-    stations.push({
-      p: V(0, top - span * t, 0), ax: X, az: Z,
-      sec: ringSection(K, { w: 0.12 * k, d: 0.092 * k, n: 2.2, bump: (th) => amp * Math.abs(Math.sin((th * pleats) / 2)) }),
-      w: t < 0.2 ? { hips: 0.7, spine: 0.3 } : { hips: 1 },
-    });
-  }
+  for (let i = 0; i <= N; i++) stations.push(skirtStation(i / N, { top, hem, flare, pleats }));
+  return loft(stations, { sub: 2, capStart: {}, boneIndex: bi, weightFn: skirtWeights(top, hem) });
+}
+
+// 裙子在 t（0 = 腰、1 = 裙襬）這個高度的一圈；grow = 往外多撐一點（條紋用）
+function skirtStation(t, { top, hem, flare, pleats }, grow = 0) {
+  const k = 1 + (flare - 1) * Math.pow(t, 1.4);
+  const amp = 0.007 * t;
+  return {
+    p: V(0, top - (top - hem) * t, 0), ax: X, az: Z,
+    sec: ringSection(32, { w: 0.12 * k + grow, d: 0.092 * k + grow, n: 2.2, bump: (th) => amp * Math.abs(Math.sin((th * pleats) / 2)) }),
+    w: t < 0.2 ? { hips: 0.7, spine: 0.3 } : { hips: 1 },
+  };
+}
+
+// 裙子上的橫條紋（水手服裙襬的那兩道）：跟裙子同一個形狀、往外浮一點的細帶，bands = [[t0, t1], …]
+export function skirtBandGeometries(bi, { top = 0.31, hem = 0.17, flare = 1.55, pleats = 10 } = {}, bands = [[0.72, 0.79], [0.86, 0.93]]) {
+  const o = { top, hem, flare, pleats };
+  return bands.map(([t0, t1]) => loft([skirtStation(t0, o, 0.0025), skirtStation((t0 + t1) / 2, o, 0.0025), skirtStation(t1, o, 0.0025)],
+    { sub: 1, boneIndex: bi, weightFn: skirtWeights(top, hem) }));
+}
+
+function skirtWeights(top, hem) {
+  const span = top - hem;
   const weightFn = (p, w) => {
     const k = 1 - smooth(p.y, hem, top - span * 0.3);
     if (k <= 0) return w;
@@ -383,7 +396,7 @@ export function skirtGeometry(bi, { top = 0.31, hem = 0.17, flare = 1.55, pleats
     out[bone] = (out[bone] || 0) + tw;
     return out;
   };
-  return loft(stations, { sub: 2, capStart: {}, boneIndex: bi, weightFn });
+  return weightFn;
 }
 
 // 披風：掛在肩後的開口殼，往下微微張開

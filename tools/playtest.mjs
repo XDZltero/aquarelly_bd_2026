@@ -25,14 +25,14 @@ for (const pos of [[-11, 4.6], [11, 4.6]]) {
   await p.evaluate(([x, z]) => window.__game.player.root.position.set(x, 0, z), pos);
   await p.waitForTimeout(1200);
   await shot('near-item');
-  await p.keyboard.press('KeyE');
+  await p.keyboard.press('KeyF');
   await p.waitForTimeout(1500);
   await shot('picked');
 }
 await p.evaluate(() => window.__game.player.root.position.set(1.5, 0, -2.2));
 await p.waitForTimeout(1500);
 await shot('near-laimu');
-await p.keyboard.press('KeyE');
+await p.keyboard.press('KeyF');
 await p.waitForTimeout(1500);
 await shot('meet');
 await until('blow', 40000);

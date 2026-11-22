@@ -220,7 +220,7 @@ addEventListener('keydown', (e) => {
   if (paused) return;
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
   keys.add(e.code);
-  if ((e.code === 'KeyE' || e.code === 'Space') && !e.repeat) onInteract();
+  if ((e.code === 'KeyF' || e.code === 'Space') && !e.repeat) onInteract();
   if (e.code === 'Space' && !e.repeat && state.mode === 'cut') doSlash();
 });
 addEventListener('keyup', (e) => keys.delete(e.code));
@@ -301,15 +301,20 @@ function nearest() {
 function updatePrompt() {
   const n = nearest();
   if (!n) return ui.prompt(null);
-  if (n.type === 'item') ui.prompt(`按 <b>E</b> 拿起「${n.it.def.name}」`);
-  else ui.prompt(`按 <b>E</b> 跟${CHARACTERS[n.c.key].name}說話`);
+  if (n.type === 'item') ui.prompt(`按 <b>F</b> 拿起「${n.it.def.name}」`);
+  else if (performance.now() < talkReadyAt) ui.prompt(null);
+  else ui.prompt(`按 <b>F</b> 跟${CHARACTERS[n.c.key].name}說話`);
 }
 
+// 跟 NPC 講完話之後要等 1 秒才能再搭話（翻對話和互動是同一顆鍵，不擋的話最後一下會直接又開始對話）
+const TALK_CD = 1000;
+let talkReadyAt = 0;
 async function onInteract() {
   if (state.mode !== 'explore' && state.mode !== 'free') return;
   const n = nearest();
   if (!n) return;
   if (n.type === 'item') return collect(n.it);
+  if (performance.now() < talkReadyAt) return; // 剛講完話：冷卻中，不會因為連按又馬上開始對話
   const npc = n.c;
   const prev = state.mode;
   state.mode = 'talk';
@@ -321,9 +326,11 @@ async function onInteract() {
     const lines = CONFIG.freeTalk[npc.key];
     await ui.say([{ who: npc.key, text: lines[Math.floor(Math.random() * lines.length)] }]);
     state.mode = 'free';
+    talkReadyAt = performance.now() + TALK_CD;
   } else if (state.collected < items.length) {
     await ui.say(CONFIG.notReady, { count: state.collected });
     state.mode = 'explore';
+    talkReadyAt = performance.now() + TALK_CD;
   } else {
     await party();
   }
@@ -604,7 +611,7 @@ function showHowTo() {
   ui.show('howto');
   return new Promise((res) => {
     const close = (e) => {
-      if (e.type === 'keydown' && !['Space', 'Enter', 'KeyE'].includes(e.code)) return;
+      if (e.type === 'keydown' && !['Space', 'Enter', 'KeyF'].includes(e.code)) return;
       removeEventListener('keydown', close);
       $('howto-btn').removeEventListener('click', close);
       ui.hide('howto');

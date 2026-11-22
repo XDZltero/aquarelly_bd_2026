@@ -8,7 +8,7 @@ import { addOutline, outlineUniforms } from './materials/AnimeOutline.js';
 import {
   torsoGeometry, necklineGeometry, glowLinesGeometry, neckGeometry, pantsGeometries, shoeGeometry, coatGeometry, sleeveGeometry, cuffGeometry,
   sleeveTrimGeometry, handGeometry, scarfGeometries, coatTrimGeometries, shirtCollarGeometry,
-  skirtGeometry, capeGeometry, bootCuffGeometry, beltGeometries, tailGeometry, shortsGeometries,
+  skirtGeometry, capeGeometry, bootCuffGeometry, beltGeometries, tailGeometry, shortsGeometries, skirtBandGeometries,
 } from './geometry/ChibiBody.js';
 import { buildWings, buildPauldron, buildBackRing, buildArmband, buildVambrace, buildLantern, buildSailor, buildHood, buildCoatButtons, wingYaw, WING_SPREAD } from './geometry/ChibiExtras.js';
 import { admiralParts } from './geometry/AdmiralOutfit.js';
@@ -91,6 +91,7 @@ export class AnimeCharacter {
       ['pants', toon(C.pants), pantsGeometries(bi), LINE.body],
       O.shorts && ['shorts', toon(O.shorts), shortsGeometries(bi), LINE.body],
       O.skirt && ['skirt', toon(O.skirt.color ?? C.coat), [skirtGeometry(bi, O.skirt)], LINE.body],
+      O.skirt?.stripe && ['skirtStripe', toon(O.skirt.stripe), skirtBandGeometries(bi, O.skirt), 0],
       O.belt && ['belt', toon(O.belt), beltGeometries(bi), LINE.small],
       // 科技夾克的發光線條：顏色亮面不受光影（shade 同色）
       O.glowLines && ['glow', toon(O.glowLines.color, { shade: O.glowLines.color }), glowLinesGeometry(bi, O.glowLines), LINE.small],

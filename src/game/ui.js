@@ -13,7 +13,7 @@ export class UI {
     const next = (e) => {
       if (!this.advance) return;
       if (!$('menu').classList.contains('hidden')) return; // 選單開著時不翻對話
-      if (e.type === 'keydown' && !['Space', 'Enter', 'KeyE'].includes(e.code)) return;
+      if (e.type === 'keydown' && !['Space', 'Enter', 'KeyF'].includes(e.code)) return;
       if (e.type === 'keydown' && e.repeat) return;
       if (performance.now() - this.openedAt < 200) return;
       e.preventDefault?.();
