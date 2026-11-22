@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { createChibi } from './chibi/chibi.js';
+import { createChibi, setChibiViewport } from './chibi/chibi.js';
 import { CHARACTERS } from './chibi/characters.js';
 import { voxelize } from './items/voxel.js';
 import { Voice, VOICE_PITCH } from './audio/voice.js';
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, stencil: true }) // stencil：半透明頭髮的描邊要用模板緩衝擋掉髮片內側;
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
@@ -41,6 +41,7 @@ scene.add(ground);
 const keys = only ? [only] : ['xiawei', 'laimu', 'sailorGirl', 'sailorBoy'];
 const chars = keys.map((k, i) => {
   const c = createChibi(CHARACTERS[k]);
+  c.lookCamera = camera;
   c.root.position.x = (i - (keys.length - 1) / 2) * 1.25;
   if (view === 'back') c.root.rotation.y = Math.PI;
   if (view === 'side') c.root.rotation.y = Math.PI / 2;
@@ -115,7 +116,9 @@ addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  setChibiViewport(innerWidth, innerHeight, renderer.getPixelRatio());
 });
+setChibiViewport(innerWidth, innerHeight, renderer.getPixelRatio());
 
 const clock = new THREE.Clock();
 const tmp = new THREE.Vector3();
