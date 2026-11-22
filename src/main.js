@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG, fmt } from './config.js';
-import { createChibi } from './chibi/chibi.js';
+import { createChibi, setChibiViewport } from './chibi/chibi.js';
 import { CHARACTERS } from './chibi/characters.js';
 import { voxelize } from './items/voxel.js';
 import { buildTemple, HALL, glowSprite, canvasTex } from './game/temple.js';
@@ -12,7 +12,7 @@ import { UI } from './game/ui.js';
 const $ = (id) => document.getElementById(id);
 
 // ---------------- 基本場景 ----------------
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, stencil: true }) // stencil：半透明頭髮的描邊要用模板緩衝擋掉髮片內側;
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
@@ -26,7 +26,9 @@ addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  setChibiViewport(innerWidth, innerHeight, renderer.getPixelRatio());
 });
+setChibiViewport(innerWidth, innerHeight, renderer.getPixelRatio());
 
 const temple = buildTemple(scene);
 const effects = new Effects(scene);
@@ -61,6 +63,7 @@ function makeActor(key, pos, yaw = 0) {
   c.root.position.copy(pos);
   c.root.rotation.y = yaw;
   c.targetYaw = yaw;
+  c.lookCamera = camera;
   scene.add(c.root);
   return c;
 }
@@ -458,7 +461,7 @@ $('mic-btn').addEventListener('click', async () => {
     blow.analyser.fftSize = 1024;
     blow.data = new Float32Array(blow.analyser.fftSize);
     src.connect(blow.analyser);
-    $('mic-btn').textContent = '🎤 麥克風開啟中，對著它用力吹！';
+    $('mic-btn').textContent = '麥克風開啟中，對著它用力吹';
   } catch {
     $('mic-btn').textContent = '無法使用麥克風，請按空白鍵';
   }

@@ -66,7 +66,7 @@ export class UI {
       const text = fmt(line.text, extra);
       onLine?.(who);
       $('dialog-name').textContent = CHARACTERS[who].name;
-      $('dialog-name').style.background = NAME_COLORS[who];
+      $('dialog-name').style.setProperty('--who', NAME_COLORS[who]);
       $('dialog-next').classList.add('hidden');
       const box = $('dialog-text');
       box.textContent = '';
